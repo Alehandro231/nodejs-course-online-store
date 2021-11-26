@@ -3,9 +3,21 @@ const toCurrency = price => new Intl.NumberFormat('ru-RU', {
   style: 'currency',
 }).format(price)
 
-document.querySelectorAll('.price').forEach(node => {
+const toDate = date => new Intl.DateTimeFormat('ru-Ru', {
+  day: '2-digit',
+  month: 'long',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit',
+}).format(new Date(date))
+
+document.querySelectorAll('.price').forEach(node =>
   node.textContent = toCurrency(node.textContent)
-})
+)
+
+document.querySelectorAll('.date').forEach(node =>
+  node.textContent = toDate(node.textContent))
 
 const $card = document.querySelector('#card')
 if ($card) {
@@ -37,3 +49,11 @@ if ($card) {
     }
   })
 }
+
+var instance = M.Tabs.init(document.querySelectorAll('.tabs'));
+
+  // Or with jQuery
+
+  $(document).ready(function(){
+    $('.tabs').tabs();
+  });

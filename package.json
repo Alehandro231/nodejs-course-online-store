@@ -8,9 +8,10 @@
     "dev": "nodemon index.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "aefimovich",
   "license": "ISC",
   "dependencies": {
+    "@handlebars/allow-prototype-access": "^1.0.5",
     "express": "^4.17.1",
     "express-handlebars": "^5.3.4",
     "mongoose": "^6.0.13",
