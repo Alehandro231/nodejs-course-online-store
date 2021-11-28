@@ -16,14 +16,15 @@ const ordersRoutes = require('./routes/orders')
 const authRoutes = require('./routes/auth')
 const varMiddleware = require('./middleware/variables')
 const userMiddleware = require('./middleware/user')
+const { MONGODB_URI, SESSION_SECRET } = require('./keys')
 
-const MONGODB_URI = `mongodb+srv://aleksey:JSXBBCbg6sJ9nU6@cluster0.iw2je.mongodb.net/shop`
 const app = express()
 
 const hbs = exphbs.create({
   defaultLayout: 'main',
   extname: 'hbs',
   handlebars: allowInsecurePrototypeAccess(Handlebars),
+  helpers: require('./utils/hbs-helpers'),
 })
 
 const store = MongoStore({
@@ -38,7 +39,7 @@ app.set('views', 'views')
 app.use(express.static(path.join(__dirname, 'public')))
 app.use(express.urlencoded({ extended: true }))
 app.use(session({
-  secret: 'secret value',
+  secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   store,
