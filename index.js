@@ -1,17 +1,23 @@
 const express = require('express')
 const path = require('path')
+const csrf = require('csurf')
+const flash = require('connect-flash')
 const mongoose = require('mongoose')
 const exphbs = require('express-handlebars')
 const Handlebars = require('handlebars')
-const {allowInsecurePrototypeAccess} = require('@handlebars/allow-prototype-access')
+const { allowInsecurePrototypeAccess } = require('@handlebars/allow-prototype-access')
+const session = require('express-session')
+const MongoStore = require('connect-mongodb-session')(session)
 const homeRoutes = require('./routes/home')
 const addRoutes = require('./routes/add')
 const coursesRoutes = require('./routes/courses')
 const cardRoutes = require('./routes/card')
 const ordersRoutes = require('./routes/orders')
 const authRoutes = require('./routes/auth')
-const User = require('./models/user')
+const varMiddleware = require('./middleware/variables')
+const userMiddleware = require('./middleware/user')
 
+const MONGODB_URI = `mongodb+srv://aleksey:JSXBBCbg6sJ9nU6@cluster0.iw2je.mongodb.net/shop`
 const app = express()
 
 const hbs = exphbs.create({
@@ -20,22 +26,28 @@ const hbs = exphbs.create({
   handlebars: allowInsecurePrototypeAccess(Handlebars),
 })
 
+const store = MongoStore({
+  collection: 'sessions',
+  uri: MONGODB_URI,
+})
+
 app.engine('hbs', hbs.engine)
 app.set('view engine', 'hbs')
 app.set('views', 'views')
 
-app.use(async (req, res, next) => {
-  try {
-    const user = await User.findById('619d1017e9e7ea0ce2cec70e')
-    req.user = user
-    next()
-  } catch (e) {
-    console.log(e)
-  }
-})
-
 app.use(express.static(path.join(__dirname, 'public')))
-app.use(express.urlencoded({extended: true}))
+app.use(express.urlencoded({ extended: true }))
+app.use(session({
+  secret: 'secret value',
+  resave: false,
+  saveUninitialized: false,
+  store,
+}))
+app.use(csrf())
+app.use(flash())
+app.use(varMiddleware)
+app.use(userMiddleware)
+
 app.use('/', homeRoutes)
 app.use('/add', addRoutes)
 app.use('/courses', coursesRoutes)
@@ -47,20 +59,9 @@ const PORT = process.env.PORT || 3000
 
 async function start() {
   try {
-    const url = `mongodb+srv://aleksey:JSXBBCbg6sJ9nU6@cluster0.iw2je.mongodb.net/shop`
-
-    await mongoose.connect(url, {
+    await mongoose.connect(MONGODB_URI, {
       useNewUrlParser: true,
     })
-    const candidate = await User.findOne()
-    if (!candidate) {
-      const user = new User({
-        email: 'efimovich@mail.ru',
-        name: 'efimovich',
-        cart: { items: [] },
-      })
-      await user.save()
-    }
     app.listen(PORT, () => {
       console.log(`server is running on port ${PORT}`)
     })
